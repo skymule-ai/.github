@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/mullet.png" width="360" alt="MULLET">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logos/skymule_full_white.png">
+    <img src="assets/logos/skymule_full_black.png" width="360" alt="MULLET">
+  </picture>
 </p>
 
 <p align="center">
@@ -30,14 +33,25 @@ The architecture is built around a hard control boundary:
 - **Operators** command drones through semantic actions, not raw setpoints.
 - **Localization** feeds PX4's EKF2 through a single external-vision bridge.
 
-```text
-operator UI ──► mullet-interfaces ──► mullet-core ──► PX4 (EKF2)
-                        ▲                              ▲
-               mission frameworks               external vision
-                                                       ▲
-                                              mullet-localization
-                                                       ▲
-                                   mullet-drivers · mullet-vio · mullet-lio
+```mermaid
+flowchart LR
+  subgraph control["Flight control"]
+    direction LR
+    ops("Operator UI") -->|mullet-interfaces| core("mullet-core")
+    missions("Mission frameworks") -->|mullet-interfaces| core
+  end
+  subgraph perception["Localization and perception"]
+    direction LR
+    drivers("mullet-drivers") --> est("mullet-vio / mullet-lio") --> loc("mullet-localization")
+  end
+  core -->|offboard control| px4("PX4")
+  loc -->|external vision to EKF2| px4
+
+  classDef default fill:transparent,stroke:#8b949e
+  classDef key fill:transparent,stroke:#8b949e,stroke-width:2.5px
+  class core,px4 key
+  style control fill:transparent,stroke:#8b949e,stroke-dasharray:4 4
+  style perception fill:transparent,stroke:#8b949e,stroke-dasharray:4 4
 ```
 
 ## Repositories
